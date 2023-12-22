@@ -1,5 +1,5 @@
 {
 	"deno.enable": true,
 	"deno.config": "./deno.jsonc",
-	"editor.formatOnSave": false
+	"deno.lint": true,
 }
