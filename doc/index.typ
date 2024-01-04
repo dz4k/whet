@@ -1,7 +1,11 @@
 #import "_definitions.typ": *
 #show: whet-documentation
 
-= whet
+#let whet-src = read("../lib/whet.js")
+
+= whet: documentation
+
+#byline[Rev. #datetime.today().display()]
 
 A minimal htmx clone that stays close to minimal HTML.
 
@@ -146,52 +150,130 @@ Content-Type: text/html
 
 == Extended event handlers
 
-TODO
+Whet extends the `on*` attributes in HTML to support all events.
+
+```html
+<button
+  onclick="alert('clicked')"
+  on:whet:will-swap="e.detail.responseText.replace('foo', 'bar')"
+  on-otherlibrary-event="alert('other library event')">
+```
+
+As can be seen above, an optional comma or dash can be inserted between `on` and the event name.
+
+For whet-specific events, there exists a shorthand syntax:
+
+```html
+<button
+  on::will-swap="e.detail.responseText.replace('foo', 'bar')">
+  <!-- equivalent to on:whet:will-swap -->
+```
+
+== Hypermedia lifecycle events
+
+These events are dispatched as part of the hypermedia interaction process. The `detail` property of all events is the action context (see @action-context) of the hyperaction.
+
+=== `whet:will-install`
+
+Dispatched on an element when Whet is about to install its event handlers on it.
+
+=== `whet:init`
+
+Dispatched after Whet has installed its event handlers on an element.
+
+=== `whet:actuated`
+
+Dispatched on an element when it has been actuated, i.e. when it has been interacted with.
+
+=== `whet:will-fetch`
+
+Dispatched on an element when a request is about to be sent.
+
+`will-fetch` is an _extendable event_, which means it supports the `waitUntil` method. This allows the event handler to delay the fetch until some asynchronous operation is complete.
+
+#figure(
+  caption: [An example of using the `waitUntil` method on `whet:will-fetch`],
+  ```js
+  document.addEventListener("whet:will-fetch", (event) => {
+    event.waitUntil(checkRequest(e))
+  })
+  async function checkRequest(event) { ... }
+  ```
+)
+
+`will-fetch` is not dispatched if the action is a `javascript:` URI.
+
+=== `whet:did-fetch-headers`
+
+Dispatched when the response headers have been received and a `Response` object is available.
+
+=== `whet:did-fetch`
+
+Dispatched when the response body has been fully received.
+
+=== `whet:fetch-error`
+
+Dispatched if and when there is an error fetching the response.
+
+The `ActionContext` will have an additional `error` property with the error.
+
+=== `whet:will-swap`
+
+Dispatched on the element that has been interacted with when the response content is about to be swapped into the document.
+
+=== `whet:will-be-swapped`
+
+Dispatched when a swap targeting this element is about to occur.
+
+=== `whet:did-swap`
+
+Dispatched on the element that has been interacted with when the response content has been swapped into the document.
+
+=== `whet:was-swapped-away`
+
+Dispatched when a swap targeting this element has occurred.
+
 
 == Programmatic API
 
-=== Hypermedia lifecycle events
+=== `$`
 
-=== `whet:will-install`
-=== `whet:init`
-=== `whet:actuated`
-=== `whet:will-fetch`
-=== `whet:did-fetch-headers`
-=== `whet:did-fetch`
-=== `whet:fetch-error`
-=== `whet:will-swap`
-=== `whet:will-be-swapped`
-=== `whet:did-swap`
-=== `whet:was-swapped-away`
+#include-jsdoc(whet-src, "$")
 
-=== Action context
+=== `$$`
 
-```
-/**
- * @typedef {object} ActionContext
- * @prop {Event?} event The actuating event.
- * @prop {Element} element The actuated element.
- * @prop {Element?} target See {@linkcode getTarget}.
- * @prop {FormData} data All form data associated with this element.
- * @prop {string} method The HTTP method to be used.
- * @prop {URL} action The URL to be used.
- * @prop {Enctype} enctype The MIME type to be used for a request body.
- * @prop {Response} [response] The response, if the request has been sent.
- * @prop {string} [responseText] The response body, if fetched.
- */
-```
+#include-jsdoc(whet-src, "$$")
 
-=== Helpers
+=== `actuate`
 
-TODO
+#include-jsdoc(whet-src, "actuate")
 
-==== `$`
+=== `dispatch`
 
-#jsdoc(```
-/**
- * querySelector alias.
- * @param {string} selector CSS selector
- * @param {ParentNode} [root=document] the element to query within, the `:scope`
- * @returns {Element | null} the first matching element
- */
-```)
+#include-jsdoc(whet-src, "dispatch")
+
+=== `encodeData`
+
+#include-jsdoc(whet-src, "encodeData")
+
+=== `getData`
+
+#include-jsdoc(whet-src, "getData")
+
+=== `install`
+
+#include-jsdoc(whet-src, "install")
+
+=== `parseHtml`
+
+#include-jsdoc(whet-src, "parseHtml")
+
+=== `swap`
+
+#include-jsdoc(whet-src, "swap")
+
+=== Action context <action-context>
+
+#include-jsdoc(whet-src, "ActionContext")
+
+where `Enctype` is a string representing a supported enctype.
